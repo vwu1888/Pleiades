@@ -43,11 +43,11 @@ def hough_transform(image):
     # Angle resolution of the accumulator in radians.
     theta = np.pi / 180
     # Only lines that are greater than threshold will be returned.
-    threshold = 90
+    threshold = 30
     # Line segments shorter than that are rejected.
     minLineLength = 70
     # Maximum allowed gap between points on the same line to link them
-    maxLineGap = 200
+    maxLineGap = 70
     # function returns an array containing dimensions of straight lines
     # appearing in the input image
     lines = cv2.HoughLinesP(image, rho, theta, threshold, minLineLength=minLineLength, maxLineGap=maxLineGap)
@@ -55,21 +55,21 @@ def hough_transform(image):
     # If no lines are detected, return an empty list
     if lines is None:
         return []
-
     filtered_lines = []
+    slopes = []
     for line in lines:
         for x1, y1, x2, y2 in line:
-            if x1 == x2:  # Perfectly vertical line (avoid division by zero)
-                filtered_lines.append(line)
+            if x1 == x2:
+                continue
+            slope = (y2 - y1) / (x2 - x1)
+            if abs(slope) < .3:
                 continue
 
-            slope = (y2 - y1) / (x2 - x1)  # Calculate slope
-
-            if abs(slope) > .8:  # Keep only steep slopes (|slope| > 1)
+            if all(abs(slope - s) > 0.1 for s in slopes):  # Ensure parallel lines
                 filtered_lines.append(line)
+                slopes.append(slope)
 
     return filtered_lines
-
 
 
 def average_slope_intercept(lines):
@@ -117,10 +117,15 @@ def pixel_points(y1, y2, line):
     if line is None:
         return None
     slope, intercept = line
-    x1 = int((y1 - intercept) / slope)
-    x2 = int((y2 - intercept) / slope)
-    y1 = int(y1)
-    y2 = int(y2)
+    if abs(slope) > 1000 or slope == 0:
+        return None
+
+    try:
+        x1 = int((y1 - intercept) / slope)
+        x2 = int((y2 - intercept) / slope)
+    except (OverflowError, ValueError):  # Catch infinite/invalid values
+        return None
+
     return ((x1, y1), (x2, y2))
 
 
@@ -133,10 +138,10 @@ def lane_lines(image, lines):
 	"""
     left_lane, right_lane = average_slope_intercept(lines)
     y1 = image.shape[0]
-    y2 = y1 * 0.6
+    y2 = int(y1 * 0.6)
     left_line = pixel_points(y1, y2, left_lane)
     right_line = pixel_points(y1, y2, right_lane)
-    return left_line, right_line
+    return list(set([line for line in [left_line, right_line] if line is not None]))
 
 
 def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=15):
@@ -149,9 +154,12 @@ def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=15):
 			thickness (Default = 12): Line thickness.
 	"""
     line_image = np.zeros_like(image)
+    drawn_lines = set()
     for line in lines:
-        if line is not None:
-            cv2.line(line_image, *line, color, thickness)
+        if line is not None and isinstance(line, tuple):
+            if line not in drawn_lines:
+                cv2.line(line_image, *line, color, thickness)
+                drawn_lines.add(line)
     return cv2.addWeighted(image, 1.0, line_image, 1.0, 0.0)
 
 
@@ -162,23 +170,9 @@ def frame_processor(image):
 		image: image of a road where one wants to detect lane lines
 		(we will be passing frames of video to this function)
 	"""
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-    # Define HSV range for concrete (light gray)
-    lower_concrete = np.array([0, 0, 160])
-    upper_concrete = np.array([180, 30, 255])
-    concrete_mask = cv2.inRange(hsv, lower_concrete, upper_concrete)
-
-    # Define HSV range for grass (brownish-yellow)
-    lower_grass = np.array([10, 50, 50])
-    upper_grass = np.array([40, 255, 255])
-    grass_mask = cv2.inRange(hsv, lower_grass, upper_grass)
-
-    # Extract only the concrete and grass edges
-    masked_image = cv2.bitwise_and(image, image, mask=cv2.bitwise_or(concrete_mask, grass_mask))
+    grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # convert the RGB image to Gray scale
-    grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # applying gaussian Blur which removes noise from the image
     # and focuses on our region of interest
 
@@ -188,9 +182,9 @@ def frame_processor(image):
     # Applying gaussian blur to remove noise from the frames
     blur = cv2.GaussianBlur(grayscale, (kernel_size, kernel_size), 0)
     # first threshold for the hysteresis procedure
-    low_t = 30
+    low_t = 40
     # second threshold for the hysteresis procedure
-    high_t = 100
+    high_t = 120
     # applying canny edge detection and save edges in a variable
     edges = cv2.Canny(blur, low_t, high_t)
     # since we are getting too many edges from our image, we apply
@@ -227,6 +221,5 @@ def process_video(test_video, output_video):
     processed.write_videofile(output_video, codec="libx264", audio=False)
 
 
-
 # calling driver function
-process_video("/Users/noah/Desktop/python project/Pleiades/videos/13.mp4", "/Users/noah/Desktop/python project/Pleiades/videos/output.mp4")
+process_video("/Users/noah/Desktop/python project/Pleiades/videos/doah2.mp4", "/Users/noah/Desktop/python project/Pleiades/videos/output.mp4")
