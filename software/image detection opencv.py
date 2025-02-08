@@ -43,15 +43,33 @@ def hough_transform(image):
     # Angle resolution of the accumulator in radians.
     theta = np.pi / 180
     # Only lines that are greater than threshold will be returned.
-    threshold = 50
+    threshold = 90
     # Line segments shorter than that are rejected.
-    minLineLength = 20
+    minLineLength = 70
     # Maximum allowed gap between points on the same line to link them
-    maxLineGap = 70
+    maxLineGap = 200
     # function returns an array containing dimensions of straight lines
     # appearing in the input image
-    return cv2.HoughLinesP(image, rho=rho, theta=theta, threshold=threshold,
-                           minLineLength=minLineLength, maxLineGap=maxLineGap)
+    lines = cv2.HoughLinesP(image, rho, theta, threshold, minLineLength=minLineLength, maxLineGap=maxLineGap)
+
+    # If no lines are detected, return an empty list
+    if lines is None:
+        return []
+
+    filtered_lines = []
+    for line in lines:
+        for x1, y1, x2, y2 in line:
+            if x1 == x2:  # Perfectly vertical line (avoid division by zero)
+                filtered_lines.append(line)
+                continue
+
+            slope = (y2 - y1) / (x2 - x1)  # Calculate slope
+
+            if abs(slope) > .8:  # Keep only steep slopes (|slope| > 1)
+                filtered_lines.append(line)
+
+    return filtered_lines
+
 
 
 def average_slope_intercept(lines):
@@ -121,7 +139,7 @@ def lane_lines(image, lines):
     return left_line, right_line
 
 
-def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=12):
+def draw_lane_lines(image, lines, color=[255, 0, 0], thickness=15):
     """
 	Draw lines onto the input image.
 		Parameters:
@@ -144,18 +162,35 @@ def frame_processor(image):
 		image: image of a road where one wants to detect lane lines
 		(we will be passing frames of video to this function)
 	"""
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Define HSV range for concrete (light gray)
+    lower_concrete = np.array([0, 0, 160])
+    upper_concrete = np.array([180, 30, 255])
+    concrete_mask = cv2.inRange(hsv, lower_concrete, upper_concrete)
+
+    # Define HSV range for grass (brownish-yellow)
+    lower_grass = np.array([10, 50, 50])
+    upper_grass = np.array([40, 255, 255])
+    grass_mask = cv2.inRange(hsv, lower_grass, upper_grass)
+
+    # Extract only the concrete and grass edges
+    masked_image = cv2.bitwise_and(image, image, mask=cv2.bitwise_or(concrete_mask, grass_mask))
+
     # convert the RGB image to Gray scale
     grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # applying gaussian Blur which removes noise from the image
     # and focuses on our region of interest
-    # size of gaussian kernel
+
+
+
     kernel_size = 5
     # Applying gaussian blur to remove noise from the frames
     blur = cv2.GaussianBlur(grayscale, (kernel_size, kernel_size), 0)
     # first threshold for the hysteresis procedure
-    low_t = 70
+    low_t = 30
     # second threshold for the hysteresis procedure
-    high_t = 200
+    high_t = 100
     # applying canny edge detection and save edges in a variable
     edges = cv2.Canny(blur, low_t, high_t)
     # since we are getting too many edges from our image, we apply
@@ -167,6 +202,9 @@ def frame_processor(image):
     # Will explain Hough Transform in detail in further steps
     hough = hough_transform(region)
     # lastly we draw the lines on our resulting frame and return it as output
+    if len(hough) == 0:  # If no lines detected, return original image
+        return image
+
     result = draw_lane_lines(image, lane_lines(image, hough))
     return result
 
@@ -191,4 +229,4 @@ def process_video(test_video, output_video):
 
 
 # calling driver function
-process_video("/Users/noah/Desktop/python project/blindness/.venv/doahq.mp4", "/Users/noah/Desktop/python project/blindness/.venv/output.mp4")
+process_video("/Users/noah/Desktop/python project/Pleiades/videos/13.mp4", "/Users/noah/Desktop/python project/Pleiades/videos/output.mp4")
