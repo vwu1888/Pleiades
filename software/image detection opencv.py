@@ -20,10 +20,10 @@ def region_selection(image):
         ignore_mask_color = 255
 
     rows, cols = image.shape[:2]
-    bottom_left = [cols * 0.1, rows * 0.95]
-    top_left = [cols * 0.4, rows * 0.6]
-    bottom_right = [cols * 0.9, rows * 0.95]
-    top_right = [cols * 0.6, rows * 0.6]
+    bottom_left = [cols * 0.01, rows * 0.98]  # Extend further left
+    top_left = [cols * 0.25, rows * 0.5]  # Shift higher for a broader view
+    bottom_right = [cols * 0.99, rows * 0.98]  # Extend further right
+    top_right = [cols * 0.75, rows * 0.5]  # Shift higher for symmetry
     vertices = np.array([[bottom_left, top_left, top_right, bottom_right]], dtype=np.int32)
 
     cv2.fillPoly(mask, vertices, ignore_mask_color)
@@ -43,11 +43,11 @@ def hough_transform(image):
     # Angle resolution of the accumulator in radians.
     theta = np.pi / 180
     # Only lines that are greater than threshold will be returned.
-    threshold = 30
+    threshold = 50
     # Line segments shorter than that are rejected.
-    minLineLength = 70
+    minLineLength = 30
     # Maximum allowed gap between points on the same line to link them
-    maxLineGap = 70
+    maxLineGap = 150
     # function returns an array containing dimensions of straight lines
     # appearing in the input image
     lines = cv2.HoughLinesP(image, rho, theta, threshold, minLineLength=minLineLength, maxLineGap=maxLineGap)
@@ -184,7 +184,7 @@ def frame_processor(image):
     # first threshold for the hysteresis procedure
     low_t = 40
     # second threshold for the hysteresis procedure
-    high_t = 120
+    high_t = 100
     # applying canny edge detection and save edges in a variable
     edges = cv2.Canny(blur, low_t, high_t)
     # since we are getting too many edges from our image, we apply
@@ -222,4 +222,4 @@ def process_video(test_video, output_video):
 
 
 # calling driver function
-process_video("/Users/noah/Desktop/python project/Pleiades/videos/doah2.mp4", "/Users/noah/Desktop/python project/Pleiades/videos/output.mp4")
+process_video("/Users/noah/Desktop/python project/Pleiades/videos/SAD.mp4", "/Users/noah/Desktop/python project/Pleiades/videos/output.mp4")
