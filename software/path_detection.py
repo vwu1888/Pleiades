@@ -64,12 +64,17 @@ def centering(image, lines):
             return center_offset
     return 0
 
+def draw(frame, paths):
+    for line in paths:
+        for x1, y1, x2, y2 in line:
+            cv2.line(frame, (x1, y1), (x2, y2), (255, 255, 255), 10, 5)
+
+
 def find_path(frame):
     path = []
 
     roi = frame[yOffset:frame.shape[0], 0:frame.shape[1]]
-    gray = cv2.cvtColor(roi, cv2.COLOR_BGRA2GRAY)
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    blur = cv2.GaussianBlur(roi, (5, 5), 0)
     canny = cv2.Canny(blur, 75, 175, 3)
     cv2.imshow("Canny", canny)
     lines = cv2.HoughLinesP(canny, 1, np.pi / 180, 150, 0, 100, 100)
@@ -77,10 +82,16 @@ def find_path(frame):
     if lines is not None:
         for l in lines:
             for x1, y1, x2, y2 in l:
+                y1 = y1 + yOffset
+                y2 = y2 + yOffset
                 if x2 == x1:
-                    continue
+                    break
                 if abs((y2 - y1) / (x2 - x1)) > 1:
-                    cv2.line(frame, (x1, y1+yOffset), (x2, y2+yOffset), (255, 255, 255), 10, 5)
                     path.append(l)
+                    break
+    if path is not None:
+        for p in path:
+            p[0][1] += yOffset
+            p[0][3] += yOffset
 
     return path

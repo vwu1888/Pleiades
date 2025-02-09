@@ -7,6 +7,7 @@ if arduino.isOpen():
 arduino.open()
 
 def writeBuzz(freq, pose):
+    freq = abs(freq)
     arduino.write(f"{freq}|{pose}".encode())
     time.sleep(0.01)
 
@@ -18,5 +19,3 @@ def buzzRight(freq):
 
 def buzzAll(freq):
     writeBuzz(freq, -1)
-
-writeBuzz(1000, 0)
