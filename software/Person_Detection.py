@@ -1,6 +1,6 @@
 import cv2
 
-borderOffset = 350
+borderOffset = 125
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 if face_cascade.empty():
@@ -14,6 +14,8 @@ def person_danger(frame, faces):
 
         dXFace = xCenter - xFace
         if abs(dXFace) < 100:
+            cv2.putText(frame, "Collision Imminent!", (50, 50),
+            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             return dXFace
 
     return 0
@@ -24,7 +26,7 @@ def draw(frame, faces):
 
 def person_detection(frame):
     roi = frame[borderOffset:frame.shape[0] - borderOffset, borderOffset:frame.shape[1] - borderOffset]
-    faces = face_cascade.detectMultiScale(roi, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
+    faces = face_cascade.detectMultiScale(roi, scaleFactor=1.1, minNeighbors=3, minSize=(45, 45))
     for face in faces:
         face[0] += borderOffset
         face[1] += borderOffset

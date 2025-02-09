@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-yOffset = 700
+yOffset = 200
 def average_slope_intercept(lines):
 
     left_lines = []
@@ -73,11 +73,11 @@ def draw(frame, paths):
 def find_path(frame):
     path = []
 
-    roi = frame[yOffset:frame.shape[0], 0:frame.shape[1]]
+    roi = frame[yOffset:frame.shape[0], :frame.shape[1]]
     blur = cv2.GaussianBlur(roi, (5, 5), 0)
-    canny = cv2.Canny(blur, 75, 175, 3)
+    canny = cv2.Canny(blur, 75, 225, 3)
     cv2.imshow("Canny", canny)
-    lines = cv2.HoughLinesP(canny, 1, np.pi / 180, 150, 0, 100, 100)
+    lines = cv2.HoughLinesP(canny, 1, np.pi / 180, 110, 0, 80, 170)
 
     if lines is not None:
         for l in lines:
@@ -86,7 +86,7 @@ def find_path(frame):
                 y2 = y2 + yOffset
                 if x2 == x1:
                     break
-                if abs((y2 - y1) / (x2 - x1)) > 1:
+                if abs((y2 - y1) / (x2 - x1)) > 0.5:
                     path.append(l)
                     break
     if path is not None:

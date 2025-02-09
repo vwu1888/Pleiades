@@ -4,7 +4,7 @@
 const int buzzers[NUM_BUZZ] = {LEFT_BUZZ, RIGHT_BUZZ};
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   while(!Serial);
 
   for(int i = 0; i < NUM_BUZZ; i++) {
@@ -14,11 +14,14 @@ void setup() {
 
 void loop() {
   while(!Serial.available());
-  String input = Serial.readString();
-
-  int indF = input.indexOf('|');
-  int freq = input.substring(0, indF).toInt();
-  int pose = input.substring(indF+1).toInt();
+  int freq = Serial.parseInt();
+  Serial.read();
+  int pose = Serial.parseInt();
+  while(Serial.available()) {
+    Serial.read();
+  }
+  Serial.println(freq);
+  Serial.println(pose);
 
   if (pose < 0) {
     setAllBuzz(freq);
@@ -35,7 +38,7 @@ void setAllBuzz(int freq) {
 
 void setBuzzer(int freq, int pose) {
   if (pose > NUM_BUZZ) {
-    return
+    return;
   }
   if (freq <= 0) {
     noTone(buzzers[pose]);
