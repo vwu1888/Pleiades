@@ -70,6 +70,7 @@ def find_path(frame):
     gray = cv2.cvtColor(roi, cv2.COLOR_BGRA2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
     canny = cv2.Canny(blur, 75, 175, 3)
+    cv2.imshow("Canny", canny)
     lines = cv2.HoughLinesP(canny, 1, np.pi / 180, 150, 0, 100, 100)
 
     if lines is not None:

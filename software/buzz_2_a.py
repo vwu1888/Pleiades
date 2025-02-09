@@ -38,12 +38,12 @@ def pwm_setup():
 
 
 
-def play_tone(frequency, duration):
+def play_tone(frequency, pin):
     pwm.ChangeFrequency(frequency)  
-    time.sleep(duration)  
-    pwm.ChangeFrequency(1)  
-    time.sleep(duration)
-    
+
+def stop_tone(pin):
+    pwm.ChangeFrequency(0)
+
 def detect_face():
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     
