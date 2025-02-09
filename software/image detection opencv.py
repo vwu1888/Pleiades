@@ -36,9 +36,9 @@ def hough_transform(image):
 
     rho = 1
     theta = np.pi / 180
-    threshold = 50
-    minLineLength = 30
-    maxLineGap = 150
+    threshold = 40
+    minLineLength = 40
+    maxLineGap = 500
 
     lines = cv2.HoughLinesP(image, rho, theta, threshold, minLineLength=minLineLength, maxLineGap=maxLineGap)
 
@@ -54,7 +54,7 @@ def hough_transform(image):
             if abs(slope) < .3:
                 continue
 
-            if all(abs(slope - s) > 0.1 for s in slopes):  # Ensure parallel lines
+            if all(abs(slope - s) > 0.1 for s in slopes):
                 filtered_lines.append(line)
                 slopes.append(slope)
 
@@ -63,10 +63,10 @@ def hough_transform(image):
 
 def average_slope_intercept(lines):
 
-    left_lines = []  # (slope, intercept)
-    left_weights = []  # (length,)
-    right_lines = []  # (slope, intercept)
-    right_weights = []  # (length,)
+    left_lines = []
+    left_weights = []
+    right_lines = []
+    right_weights = []
 
     for line in lines:
         for x1, y1, x2, y2 in line:
