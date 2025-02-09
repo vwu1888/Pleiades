@@ -31,18 +31,21 @@ def pwm_setup():
 
     global pwm
     pwm = GPIO.PWM(BUZZER_PIN_E, 1)  
-    pwm.start(50)  
+    pwm.start(0)  
     
     global pwm2
     pwm2 = GPIO.PWM(BUZZER_PIN_OBJ, 1)
+    pwm2.start(0)
 
 
 
 def play_tone(frequency, pin):
-    pwm.ChangeFrequency(frequency)  
+    pwm.ChangeFrequency(frequency)
+    pwm.ChangeDutyCycle(50)
 
 def stop_tone(pin):
-    pwm.ChangeFrequency(0)
+    pwm.ChangeFrequency(1)
+    pwm.ChangeDutyCycle(0)
 
 def detect_face():
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
