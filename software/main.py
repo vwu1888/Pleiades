@@ -7,11 +7,11 @@ import time
 cap = cv2.VideoCapture("/home/vwu/src/Pleiades/videos/path.mp4")
 
 def pathCorrection(danger):
-    if danger > 0:
+    if not (danger < 0):
         arduinoBuzz.buzzRight(danger * 10)
-    if danger < 0:
+    if not (danger > 0):
         arduinoBuzz.buzzLeft(danger * 10)
-    if danger == 0:
+    if danger != 0:
         arduinoBuzz.buzzAll(0)
 
 def collisionAvoidance(danger):
