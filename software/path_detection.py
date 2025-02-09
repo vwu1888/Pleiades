@@ -49,6 +49,7 @@ def lane_lines(image, lines):
     left_line = pixel_points(y1, y2, left_lane)
     right_line = pixel_points(y1, y2, right_lane)
     return list(set([line for line in [left_line, right_line] if line is not None]))
+
 def centering(image, lines):
     lanes = lane_lines(image, lines)
     mid_x = image.shape[1] // 2  # Get frame center
