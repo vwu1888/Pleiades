@@ -1,27 +1,25 @@
-#define LEFT_BUZZ 5
+#define LEFT_BUZZ 11
 #define RIGHT_BUZZ 3
 #define NUM_BUZZ 2
-const int buzzers[NUM_BUZZ] = {LEFT_BUZZ, RIGHT_BUZZ};
+const int buzzers[NUM_BUZZ] = { LEFT_BUZZ, RIGHT_BUZZ };
 
 void setup() {
-  Serial.begin(9600);
-  while(!Serial);
+  Serial.begin(115200);
+  while (!Serial);
 
-  for(int i = 0; i < NUM_BUZZ; i++) {
+  for (int i = 0; i < NUM_BUZZ; i++) {
     pinMode(buzzers[i], OUTPUT);
   }
 }
 
 void loop() {
-  while(!Serial.available());
+  while (!Serial.available());
   int freq = Serial.parseInt();
   Serial.read();
   int pose = Serial.parseInt();
-  while(Serial.available()) {
+  while (Serial.available()) {
     Serial.read();
   }
-  Serial.println(freq);
-  Serial.println(pose);
 
   if (pose < 0) {
     setAllBuzz(freq);
@@ -41,7 +39,7 @@ void setBuzzer(int freq, int pose) {
     return;
   }
   if (freq <= 0) {
-    noTone(buzzers[pose]);
+    analogWrite(buzzers[pose], 0);
   }
   tone(buzzers[pose], freq);
 }

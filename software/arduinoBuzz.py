@@ -1,15 +1,15 @@
 import time
 import serial
 
-arduino = serial.Serial('/dev/ttyACM0', 9600)
+arduino = serial.Serial('/dev/ttyACM0', 115200)
 if arduino.isOpen():
     arduino.close()
 arduino.open()
 
 def writeBuzz(freq, pose):
+    print("{freq}|{pose}".format(freq=freq, pose=pose))
     freq = abs(freq)
     arduino.write(f"{freq}|{pose}".encode())
-    time.sleep(0.2)
 
 def buzzLeft(freq):
     writeBuzz(freq, 0)
