@@ -17,16 +17,12 @@ def pathCorrection(danger):
 def collisionAvoidance(danger):
     if danger == 0 or abs(danger) >= 80:
         arduinoBuzz.buzzAll(0)
-        collisionWarning = False
     elif abs(danger) < 30:
         arduinoBuzz.buzzAll(5000)
-        collisionWarning = True
     elif danger < 80:
         arduinoBuzz.buzzRight(5 // danger * 4000)
-        collisionWarning = True
     elif danger > -80:
         arduinoBuzz.buzzLeft(5 // danger * 4000)
-        collisionWarning = True
 
 
 
@@ -42,8 +38,8 @@ while(cap.isOpened()):
     faces = Person_Detection.person_detection(gray)
     collisionProb = Person_Detection.person_danger(frame, faces)
 
-    pathCorrection(offPath)
     collisionAvoidance(collisionProb)
+    pathCorrection(offPath)
 
     path_detection.draw(frame, path)
     Person_Detection.draw(frame, faces)
